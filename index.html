@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>CatTI</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --black: #111111;
+    --gray-1: #f5f5f5;
+    --gray-2: #e8e8e8;
+    --gray-3: #aaaaaa;
+    --white: #ffffff;
+    --accent: #c084fc;
+    --accent-light: #f3e8ff;
+    --font: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
+  }
+
+  body {
+    background: var(--white);
+    color: var(--black);
+    font-family: var(--font);
+    min-height: 100vh;
+    max-width: 390px;
+    margin: 0 auto;
+    overflow-x: hidden;
+  }
+
+  /* ─── 页面切换 ─── */
+  .page { display: none !important; }
+  .page.active { display: revert !important; }
+
+  /* ─── 封面页 ─── */
+  #page-home {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+    background: #faf5ff;
+  }
+
+  .home-title-img {
+    width: 200px;
+    margin-bottom: 8px;
+  }
+
+  .home-subtitle {
+    font-size: 13px;
+    color: var(--gray-3);
+    margin-bottom: 40px;
+    letter-spacing: 0.05em;
+  }
+
+  .home-cats-scroll {
+    width: 100vw;
+    max-width: 390px;
+    overflow: hidden;
+    margin-bottom: 40px;
+  }
+
+  .home-cats-track {
+    display: flex;
+    gap: 12px;
+    padding: 8px 0;
+    animation: scroll-left 18s linear infinite;
+    width: max-content;
+  }
+
+  .home-cats-track2 {
+    animation: scroll-right 22s linear infinite;
+    margin-top: 8px;
+  }
+
+  @keyframes scroll-left {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  @keyframes scroll-right {
+    0% { transform: translateX(-50%); }
+    100% { transform: translateX(0); }
+  }
+
+  .home-cat-item {
+    width: 56px;
+    height: 56px;
+    background: var(--white);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+
+  .btn-start {
+    background: var(--black);
+    color: var(--white);
+    border: none;
+    border-radius: 14px;
+    padding: 16px 48px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+  }
+
+  .btn-start:active { opacity: 0.8; }
+
+  /* ─── 答题页 ─── */
+  #page-quiz {
+    min-height: 100vh;
+    padding-bottom: 40px;
+    background: var(--white);
+  }
+
+  .quiz-header {
+    padding: 20px 20px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .btn-back {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--black);
+    padding: 4px;
+    line-height: 1;
+  }
+
+  .quiz-counter {
+    font-size: 13px;
+    color: var(--gray-3);
+    font-weight: 500;
+  }
+
+  .progress-bar {
+    height: 3px;
+    background: var(--gray-2);
+    margin: 14px 20px 0;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+
+  .quiz-cat-wrap {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    padding: 20px 20px 0;
+  }
+
+  .quiz-cat-icon {
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .quiz-cat-bubble {
+    background: var(--gray-1);
+    border-radius: 12px 12px 12px 4px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--gray-3);
+    line-height: 1.5;
+    max-width: 240px;
+  }
+
+  .question-text {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.5;
+    padding: 20px 20px 0;
+    letter-spacing: -0.01em;
+  }
+
+  .options-wrap {
+    padding: 16px 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .opt {
+    background: var(--gray-1);
+    border: 2px solid transparent;
+    border-radius: 14px;
+    padding: 14px 16px;
+    text-align: left;
+    font-size: 15px;
+    line-height: 1.5;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    transition: border-color 0.15s, background 0.15s;
+    font-family: var(--font);
+    color: var(--black);
+  }
+
+  .opt:active { opacity: 0.8; }
+
+  .opt.selected {
+    border-color: var(--accent);
+    background: var(--accent-light);
+  }
+
+  .opt-key {
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--gray-3);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .opt.selected .opt-key { color: var(--accent); }
+
+  .quiz-footer {
+    padding: 20px 20px 0;
+  }
+
+  .btn-next {
+    width: 100%;
+    background: var(--gray-2);
+    color: var(--gray-3);
+    border: none;
+    border-radius: 14px;
+    padding: 16px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    font-family: var(--font);
+  }
+
+  .btn-next.enabled {
+    background: var(--black);
+    color: var(--white);
+  }
+
+  .btn-next:active { opacity: 0.8; }
+
+  /* ─── 结果页 ─── */
+  #page-result {
+    min-height: 100vh;
+    padding-bottom: 60px;
+    background: var(--white);
+  }
+
+  .result-header {
+    padding: 14px 20px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .result-header-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--black);
+  }
+
+  .result-date {
+    font-size: 13px;
+    color: var(--gray-3);
+  }
+
+  .result-hero {
+    padding: 40px 28px 34px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #faf5ff;
+    margin: 14px 20px 0;
+    border-radius: 20px;
+  }
+
+  .result-cat-frame {
+    width: 144px;
+    height: 144px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .result-label {
+    font-size: 12px;
+    color: var(--gray-3);
+    margin-bottom: 6px;
+    letter-spacing: 0.05em;
+  }
+
+  .result-type {
+    font-size: 32px;
+    font-weight: 800;
+    text-align: center;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  .result-subname {
+    font-size: 14px;
+    color: var(--gray-3);
+    margin-top: 6px;
+  }
+
+  .result-quote {
+    background: var(--gray-1);
+    border-radius: 14px;
+    padding: 16px 18px 16px 14px;
+    margin: 16px 20px 0;
+    position: relative;
+  }
+
+  .result-quote::before {
+    content: '"';
+    font-size: 36px;
+    color: var(--accent);
+    line-height: 1;
+    display: block;
+    margin-bottom: 4px;
+    font-family: Georgia, serif;
+  }
+
+  .result-quote p {
+    padding-left: 6px;
+    font-size: 15px;
+    line-height: 1.6;
+    font-weight: 500;
+  }
+
+  .result-traits {
+    padding: 16px 20px 0;
+  }
+
+  .result-traits-label {
+    font-size: 12px;
+    color: var(--gray-3);
+    margin-bottom: 10px;
+    letter-spacing: 0.05em;
+  }
+
+  .trait-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .trait {
+    background: var(--accent-light);
+    color: #7c3aed;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .result-desc {
+    padding: 0 24px 24px;
+    font-size: 14px;
+    line-height: 1.8;
+    color: #444;
+    margin-top: 16px;
+  }
+
+  .result-actions {
+    padding: 0 24px;
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn-share {
+    flex: 1;
+    background: var(--black);
+    color: var(--white);
+    border: none;
+    border-radius: 14px;
+    padding: 15px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: var(--font);
+  }
+
+  .btn-retry {
+    flex: 1;
+    background: var(--gray-1);
+    color: var(--black);
+    border: none;
+    border-radius: 14px;
+    padding: 15px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: var(--font);
+  }
+
+  .btn-share:active, .btn-retry:active { opacity: 0.8; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     封面页
+══════════════════════════════════════════ -->
+<div class="page active" id="page-home">
+  <svg class="home-title-img" viewBox="0 0 200 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <text x="0" y="40" font-family="-apple-system,PingFang SC,sans-serif" font-size="44" font-weight="900" fill="#111" letter-spacing="-2">CatTI</text>
+  </svg>
+  <p class="home-subtitle">你是哪种猫？</p>
+
+  <div class="home-cats-scroll">
+    <div class="home-cats-track" id="track1"></div>
+    <div class="home-cats-track home-cats-track2" id="track2"></div>
+  </div>
+
+  <button class="btn-start" onclick="startQuiz()">开始测试</button>
+</div>
+
+<!-- ══════════════════════════════════════════
+     答题页
+══════════════════════════════════════════ -->
+<div class="page" id="page-quiz">
+  <div class="quiz-header">
+    <button class="btn-back" onclick="goBack()">←</button>
+    <span class="quiz-counter" id="quiz-counter">1 / 12</span>
+  </div>
+  <div class="progress-bar">
+    <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+  </div>
+
+  <div class="quiz-cat-wrap">
+    <div class="quiz-cat-icon" id="quiz-cat-icon"></div>
+    <div class="quiz-cat-bubble" id="quiz-cat-bubble">认真想想，别骗我</div>
+  </div>
+
+  <div class="question-text" id="question-text"></div>
+
+  <div class="options-wrap" id="options-wrap"></div>
+
+  <div class="quiz-footer">
+    <button class="btn-next" id="btn-next" onclick="nextQuestion()">继续 →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     结果页
+══════════════════════════════════════════ -->
+<div class="page" id="page-result">
+  <div class="result-header">
+    <span class="result-header-title">CatTI 结果</span>
+    <span class="result-date" id="result-date"></span>
+  </div>
+
+  <div class="result-hero">
+    <div class="result-cat-frame" id="result-cat-frame"></div>
+    <div class="result-label">你的猫格是</div>
+    <div class="result-type" id="result-type">—</div>
+    <div class="result-subname" id="result-subname"></div>
+  </div>
+
+  <div class="result-quote">
+    <p id="result-quote-text"></p>
+  </div>
+
+  <div class="result-traits">
+    <div class="result-traits-label">性格标签</div>
+    <div class="trait-list" id="trait-list"></div>
+  </div>
+
+  <div class="result-desc" id="result-desc"></div>
+
+  <div class="result-actions">
+    <button class="btn-share" onclick="shareResult()">分享给朋友</button>
+    <button class="btn-retry" onclick="retryQuiz()">再测一次</button>
+  </div>
+</div>
+
+<script>
+// ──────────────────────────────────────────────
+// 题目数据（12题，猫的视角，覆盖E/I S/N T/F J/P）
+// ──────────────────────────────────────────────
+const questions = [
+  {
+    text: "窗外来了一只从没见过的猫，你怎么做？",
+    hint: "社交还是不社交",
+    options: [
+      { key: "A", text: "立刻跳上窗台，凑过去看，说不定能交个朋友", dim: "E" },
+      { key: "B", text: "远远地观察，确认对方没有威胁再说", dim: "I" },
+      { key: "C", text: "瞥了一眼，继续睡觉，关我什么事", dim: "I" }
+    ]
+  },
+  {
+    text: "主人把家具重新摆了一遍，你的反应是？",
+    hint: "变化来了",
+    options: [
+      { key: "A", text: "立刻把每个角落都巡逻一遍，新地图要重新标记", dim: "N" },
+      { key: "B", text: "有点不安，在原来沙发的位置坐了很久", dim: "S" },
+      { key: "C", text: "先把新沙发蹭一遍，宣示主权再说", dim: "P" }
+    ]
+  },
+  {
+    text: "你最喜欢的玩具被另一只猫叼走了，你怎么办？",
+    hint: "这时候你第一个动作是什么",
+    options: [
+      { key: "A", text: "直接冲过去抢回来，这是我的", dim: "T" },
+      { key: "B", text: "在旁边委屈地看着，等它玩够了再拿回来", dim: "F" },
+      { key: "C", text: "评估了一下体型，决定去找主人告状", dim: "S" }
+    ]
+  },
+  {
+    text: "深夜三点，你突然精力充沛，你在做什么？",
+    hint: "你的夜晚比你诚实多了",
+    options: [
+      { key: "A", text: "在家里全速奔跑，不知道为什么，就是要跑", dim: "P" },
+      { key: "B", text: "悄悄爬上主人床，蜷在他脚边，暖暖的", dim: "F" },
+      { key: "C", text: "坐在窗边盯着外面，脑子里在想一些事", dim: "N" }
+    ]
+  },
+  {
+    text: "陌生人来家里做客，想摸你",
+    hint: "你的第一反应是",
+    options: [
+      { key: "A", text: "主动凑过去，让他摸，顺便蹭蹭他的腿", dim: "E" },
+      { key: "B", text: "闻了一下，觉得还行，让他摸了两下就走了", dim: "S" },
+      { key: "C", text: "躲到床底下，等他走了再出来", dim: "I" }
+    ]
+  },
+  {
+    text: "你正在打盹，主人突然开了吸尘器",
+    hint: "你的第一个动作是",
+    options: [
+      { key: "A", text: "立刻跳起来冲出去，这个声音必须搞清楚", dim: "P" },
+      { key: "B", text: "皱了皱眉，换了个地方继续睡", dim: "J" },
+      { key: "C", text: "睁眼盯着它，在脑子里分析了一遍它的运动轨迹", dim: "N" }
+    ]
+  },
+  {
+    text: "你今天不想被打扰，但主人一直来撸你",
+    hint: "你会怎么处理",
+    options: [
+      { key: "A", text: "忍了，虽然烦，但看他那么开心也算了", dim: "F" },
+      { key: "B", text: "直接起身走开，找个他够不到的地方待着", dim: "I" },
+      { key: "C", text: "让他摸了一会儿，然后用爪子轻轻推开他的手", dim: "T" }
+    ]
+  },
+  {
+    text: "你独自待在家里，你在做什么？",
+    hint: "一个人的时候你是什么状态",
+    options: [
+      { key: "A", text: "把家里每个房间都逛了一遍，看看有没有新东西", dim: "E" },
+      { key: "B", text: "找了个阳光最好的地方，躺着发呆", dim: "I" },
+      { key: "C", text: "坐在窗边，看着外面的世界，想了很多", dim: "N" }
+    ]
+  },
+  {
+    text: "主人拿出一个新玩具，你？",
+    hint: "跟还是不跟",
+    options: [
+      { key: "A", text: "立刻扑过去，先玩再说", dim: "P" },
+      { key: "B", text: "先观察了一会儿，确认安全再靠近", dim: "J" },
+      { key: "C", text: "无所谓，玩具都差不多，随便", dim: "S" }
+    ]
+  },
+  {
+    text: "你成功从柜子顶上跳下来没有摔跤，你的反应是？",
+    hint: "你会表现出来吗",
+    options: [
+      { key: "A", text: "在主人面前走了好几圈，等他夸我", dim: "E" },
+      { key: "B", text: "自己心里满意了一下，继续干别的", dim: "I" },
+      { key: "C", text: "已经在规划下一个更高的目标了", dim: "T" }
+    ]
+  },
+  {
+    text: "今天的猫粮换了新口味，你的反应是？",
+    hint: "这种时刻最能暴露你",
+    options: [
+      { key: "A", text: "闻了一下，吃了，反正饿了什么都行", dim: "P" },
+      { key: "B", text: "认真闻了很久，确认没问题才吃", dim: "J" },
+      { key: "C", text: "越闻越不确定，最后坐在碗边发呆了十分钟", dim: "N" }
+    ]
+  },
+  {
+    text: "最后一题：如果可以选，你最想过哪种猫生？",
+    hint: "认真想想，这是你真实的向往",
+    options: [
+      { key: "A", text: "每天认识新朋友，到处探索，把整个小区都踩一遍", dim: "E" },
+      { key: "B", text: "有一个最懂我的人，安安静静待在一起就够了", dim: "I" },
+      { key: "C", text: "自由自在，想去哪就去哪，没有猫笼没有规矩", dim: "P" }
+    ]
+  }
+];
+
+// ──────────────────────────────────────────────
+// 结果数据（16种猫咪 × MBTI）
+// ──────────────────────────────────────────────
+const results = {
+  "天生就是要被仰望的布偶": {
+    subname: "不用担心，我来定规矩",
+    quote: "不是我控制欲强，是你们不够自觉。",
+    traits: ["气场碾压全场", "对自己要求极高", "让人又依赖又有压力", "天生的领地管理者"],
+    desc: "布偶猫走进一个房间，所有猫都会下意识让路——不是因为它凶，是因为它太有确定感了。它专注、自律，认定的事绝不拖泥带水。你也是那种还没开口，气场已经先到的类型。脑子转速比别人快三档，说话的时候已经想好五步之后了。",
+    cat: "ragdoll"
+  },
+  "把所有人都带跑偏的德文卷毛": {
+    subname: "智商在线但没有刹车",
+    quote: "我只是在帮你们看到你们没看到的可能性。",
+    traits: ["点子多到自己都跟不上", "好奇心是最大的驱动力", "话题跳跃是日常", "最怕无聊"],
+    desc: "德文卷毛是猫界的「问题制造机」——它的耳朵大得像雷达，脑子转得比身体还快，对一切新鲜事物都无法抗拒。它停不下来，闲着比累着更难受。你也是那种脑子一旦停下来就会开始搞事情的人，聊天对你来说是游戏，赢了也不知道下一关是什么。",
+    cat: "devonrex"
+  },
+  "比你更担心你的缅因猫": {
+    subname: "全场情绪承包商",
+    quote: "你们先说，我没事的，真的。",
+    traits: ["最先感知到气氛不对", "委屈自己照顾所有人", "掉眼泪前先问别人没事吧", "群里最快回消息"],
+    desc: "缅因猫是猫界的「温柔巨人」，体型大，但对人类情绪的感知力强得像装了雷达，而且它真的在乎，不是客套。你也是那种还没问就已经感知到对方情绪的人。你照顾了很多人，但没人知道你也会偶尔希望有人先问问你。",
+    cat: "mainecoon"
+  },
+  "什么都想扑一下的豹猫": {
+    subname: "人间好奇心漩涡",
+    quote: "等等！这个也好玩！那个先别关！",
+    traits: ["同时开了好几个新方向", "热情真实但寿命只有两周", "认识新朋友比记住名字快", "最怕无聊"],
+    desc: "孟加拉豹猫的花纹是猫界最野的，对一切移动的东西都无法抗拒，看到什么有意思的就扑过去，根本管不住自己。它不是乱，它只是对世界的兴趣太多了。你也是那种什么都能让你兴奋、但兴奋完了发现不知道接下来要干嘛的人。",
+    cat: "bengal"
+  },
+  "规矩就是规矩的英短": {
+    subname: "靠谱是我最高荣誉",
+    quote: "几点吃饭就是几点，这不是很基本的事吗？",
+    traits: ["作息精准到分钟", "迟喂饭的人会被记住", "说「没问题」前先确认细节", "天然的可信赖体质"],
+    desc: "英短是猫界的「稳定派」，不是因为它无聊，是因为它认真——认真到别的猫都跟不上那股劲儿。它把每一件事当正经事来对待，不接受差不多。你也是那种把「靠谱」当成最高荣誉的人。别人不守承诺你会皱眉，但只要你说行，就是真的行。",
+    cat: "britishshorthair"
+  },
+  "永远在找下一个目标的阿比": {
+    subname: "人形随机事件发生器",
+    quote: "计划？什么计划？我有计划吗？",
+    traits: ["说好的事不保证明天还记得", "永远在整活", "掉线是日常", "但搞起来真的很爽"],
+    desc: "阿比西尼亚猫的人生哲学是「规律是别人的事」——它能在两秒内无缝切换「我在休息」和「我要出逃」两种状态，令主人完全无法预测。但你不得不承认，跟它在一起总会发生有意思的事。你也是那种身边人永远无法预测下一步的类型。",
+    cat: "abyssinian"
+  },
+  "全家都要照顾到的暹罗": {
+    subname: "有求必应的宇宙中心",
+    quote: "我帮，我帮，都帮，真的不麻烦。",
+    traits: ["说不出口「我不想理你」", "帮完了才发现自己很累", "被需要会开心", "最了解每个人的喜好"],
+    desc: "暹罗猫是猫界话最多的品种，它需要参与你生活的每一个细节——你去哪它跟哪，你难过它也难过。它天生把别人的需求放在前面。你也是那种不好意思让别人失望的人，说「好」总是比说「不」容易。",
+    cat: "siamese"
+  },
+  "出镜率最高的波斯猫": {
+    subname: "天生要被看见",
+    quote: "人生苦短，今天的毛不能乱。",
+    traits: ["镜头感天生", "气氛不对立刻出手救场", "朋友圈比日记还真实", "让无聊的场合有救"],
+    desc: "波斯猫的毛是需要每天打理的，它们也通常知道自己好看——出门前要梳毛，拍照要摆姿势，走在路上自带回头率。它不是浮夸，它只是对「出场感」天生敏感。你也是那种走进房间之前已经预设好自己出场方式的人。",
+    cat: "persian"
+  },
+  "冷眼看穿一切的俄蓝": {
+    subname: "我不孤僻，我在筛选",
+    quote: "不是不在乎，只是不值得让你看到我在乎。",
+    traits: ["进门槛高但进了就很稳", "表情淡定但内心戏很多", "宁可自己搞定也不解释", "睡前复盘所有细节"],
+    desc: "俄罗斯蓝猫是「高冷系」的代表，对人有门槛，但认定你之后是真的认定了，不会随便动摇。它的表情永远像在说「关我什么事」，但其实什么都默默注意到了。你也是那种外表淡定、内部服务器飞速运转的人。",
+    cat: "russianblue"
+  },
+  "坐在那里想了三小时的折耳": {
+    subname: "大型行走发呆装置",
+    quote: "刚才有个很好的想法，现在消失了。",
+    traits: ["外表圆润内心复杂", "脑内频道永远开着", "懒得解释但其实早想通了", "发呆时可能是天才"],
+    desc: "苏格兰折耳猫总是以一种「我在思考宇宙」的姿势坐着，看起来一直在想什么严肃的事，其实脑子里可能在播一首歌。它不慌不忙，慢慢来，但慢下来之后往往比谁都想得深。你也是那种坐着看起来什么都没做、实际上已经在脑子里把一件事转了十八个角度的人。",
+    cat: "scottishfold"
+  },
+  "只有你看不见的温柔的伯曼": {
+    subname: "微笑刺客",
+    quote: "我很好。（我不好。但我处理好了。）",
+    traits: ["治愈别人是本能", "自己偷偷崩掉再重启", "说「没事」基本都有事", "共情雷达24小时开机"],
+    desc: "伯曼猫的眼神是世界上最治愈的表情之一，但这个品种其实很容易焦虑——它把情绪藏得很好，但压力一大就会莫名悲伤。你也是那个对外永远温柔、对内偶尔有个小角落在悄悄坍塌的人。你治愈了很多人，但治愈你的人，你还没遇到够多。",
+    cat: "birman"
+  },
+  "活在自己故事里的安哥拉": {
+    subname: "精神世界建筑师",
+    quote: "这片阳光的角度让我想到了一些事，你们不会懂的。",
+    traits: ["内心宇宙比现实还大", "对美有偏执的标准", "表达困难但感受满分", "被真正理解那一刻会全力爱你"],
+    desc: "土耳其安哥拉猫外表飘逸安静，但它的内心完全是另一个世界——它对情绪极度敏感，对它在乎的人极度忠诚，但它不会随便对谁打开。你也是那种别人看起来在发呆、自己已经在脑内写完一部剧本的人。没人懂你很孤独，但被懂了的那一刻，什么都值了。",
+    cat: "angora"
+  },
+  "几点吃饭绝不能乱的美短": {
+    subname: "执行力无限",
+    quote: "说好今天巡逻三圈的，凌晨两点也要巡完。",
+    traits: ["作息清单从不过夜", "迟喂饭让自己睡不着", "靠谱到让人有点压力", "「差不多」三个字是异类"],
+    desc: "美短是猫界的「实干派」——它认定要完成的事，绝对不会半途而废。它把每一次巡逻、每一次进食都当成正经任务来对待。你也是那种一旦认定要做就必须做完的人，不是完美主义，是「说出去了就不能反悔」的朴素信念在撑着你。",
+    cat: "americanshorthair"
+  },
+  "不需要你担心的挪威森林猫": {
+    subname: "沉默系解题高手",
+    quote: "没什么好说的，我已经搞定了。",
+    traits: ["话少但每个动作都有用", "爬树能力强到诡异", "不解释但结果在那里", "被需要但不爱被打扰"],
+    desc: "挪威森林猫是最「不黏人」的猫种，它独立、冷静、对外人保持距离，但它认定的人它会一直默默守着。它不会说「我来帮你」，但出了事第一个冷静处理的就是它。你也是那种存在本身就是安全感的人，不需要解释，结果在那里就够了。",
+    cat: "norwegianforest"
+  },
+  "记住你所有习惯的喜马拉雅": {
+    subname: "世界上最细心的猫",
+    quote: "你没说，但我记得你上次不喜欢那个味道。",
+    traits: ["你的作息比你自己更清楚", "不邀功但默默都做了", "被忽视会难过但不说", "照顾你是本能"],
+    desc: "喜马拉雅猫外表蓬松软萌，骨子里是一部超级细致的人际关系记录仪——它记得你上次喝了什么、喜欢哪种抚摸方式，把照顾你当成一种本能。你也是那种把「照顾别人」当作日常操作系统的人。你做的很多事别人没注意到，但那不影响你继续做。",
+    cat: "himalayan"
+  },
+  "今天也没什么大事的橘猫": {
+    subname: "慢节奏生活家",
+    quote: "急什么，好东西都要慢慢来的。",
+    traits: ["催不动是天赋", "享受当下是人生观", "对食物有自己的审美", "不内卷但也不委屈"],
+    desc: "橘猫用它圆润的身材以自己的节奏探索世界，没有人能催它——它就是要慢慢走，慢慢吃，把每一步都踩实了再说。它不是懒，它只是不觉得「快」是什么了不起的优点。你也是那种不跟风、不焦虑未来、认真把今天过好的人。别人在赶路，你在晒太阳。",
+    cat: "orange"
+  }
+};
+
+// ──────────────────────────────────────────────
+// 16种猫咪像素SVG（32×32像素风格，内联）
+// ──────────────────────────────────────────────
+function makeCatSVG(colors, size) {
+  // colors: { body, belly, eye, nose, ear, stripe }
+  const s = size || 130;
+  const c = Object.assign({ body:'#e8c9a0', belly:'#fff5e6', eye:'#2d6a4f', nose:'#e07070', ear:'#f4a0a0', stripe:'none', pupil:'#111', bg:'transparent' }, colors);
+  return `<svg width="${s}" height="${s}" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated">
+    <rect width="32" height="32" fill="${c.bg}" rx="6"/>
+    <!-- 耳朵 -->
+    <polygon points="6,10 9,4 12,10" fill="${c.ear}"/>
+    <polygon points="20,10 23,4 26,10" fill="${c.ear}"/>
+    <polygon points="7,10 9,6 11,10" fill="${c.body}"/>
+    <polygon points="21,10 23,6 25,10" fill="${c.body}"/>
+    <!-- 身体 -->
+    <ellipse cx="16" cy="22" rx="9" ry="7" fill="${c.body}"/>
+    <!-- 肚皮 -->
+    <ellipse cx="16" cy="23" rx="5" ry="4" fill="${c.belly}"/>
+    <!-- 头 -->
+    <ellipse cx="16" cy="14" rx="8" ry="7" fill="${c.body}"/>
+    <!-- 条纹（可选） -->
+    ${c.stripe !== 'none' ? `<line x1="13" y1="10" x2="12" y2="14" stroke="${c.stripe}" stroke-width="1" opacity="0.5"/>
+    <line x1="16" y1="9" x2="16" y2="13" stroke="${c.stripe}" stroke-width="1" opacity="0.5"/>
+    <line x1="19" y1="10" x2="20" y2="14" stroke="${c.stripe}" stroke-width="1" opacity="0.5"/>` : ''}
+    <!-- 眼睛 -->
+    <ellipse cx="13" cy="13" rx="2" ry="2.2" fill="${c.eye}"/>
+    <ellipse cx="19" cy="13" rx="2" ry="2.2" fill="${c.eye}"/>
+    <ellipse cx="13" cy="13.5" rx="1" ry="1.4" fill="${c.pupil}"/>
+    <ellipse cx="19" cy="13.5" rx="1" ry="1.4" fill="${c.pupil}"/>
+    <circle cx="13.5" cy="12.8" r="0.5" fill="white"/>
+    <circle cx="19.5" cy="12.8" r="0.5" fill="white"/>
+    <!-- 鼻子 -->
+    <ellipse cx="16" cy="16" rx="1.2" ry="0.9" fill="${c.nose}"/>
+    <!-- 嘴 -->
+    <path d="M14.5 17 Q16 18.5 17.5 17" stroke="#c06060" stroke-width="0.7" fill="none"/>
+    <!-- 胡须 -->
+    <line x1="8" y1="15.5" x2="13" y2="16" stroke="#aaa" stroke-width="0.5"/>
+    <line x1="8" y1="17" x2="13" y2="16.5" stroke="#aaa" stroke-width="0.5"/>
+    <line x1="19" y1="16" x2="24" y2="15.5" stroke="#aaa" stroke-width="0.5"/>
+    <line x1="19" y1="16.5" x2="24" y2="17" stroke="#aaa" stroke-width="0.5"/>
+    <!-- 尾巴 -->
+    <path d="M25 24 Q30 20 28 16" stroke="${c.body}" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  </svg>`;
+}
+
+const catSVGs = {
+  ragdoll:           makeCatSVG({ body:'#d4c5e2', belly:'#f0eaf8', eye:'#4a90d9', ear:'#c4a8d8', stripe:'none' }),
+  devonrex:          makeCatSVG({ body:'#c8b89a', belly:'#f0e8d8', eye:'#8b6914', ear:'#b89878', stripe:'#a07850' }),
+  mainecoon:         makeCatSVG({ body:'#b8956a', belly:'#f5e8d0', eye:'#2d7a3a', ear:'#a07850', stripe:'#8b6040' }),
+  bengal:            makeCatSVG({ body:'#d4a855', belly:'#f8e8b0', eye:'#c8a020', ear:'#c09040', stripe:'#8b5a10' }),
+  britishshorthair:  makeCatSVG({ body:'#9aabb8', belly:'#dde8f0', eye:'#e8a020', ear:'#8090a0', stripe:'none' }),
+  abyssinian:        makeCatSVG({ body:'#c8904a', belly:'#f0d8a8', eye:'#c8a020', ear:'#b07838', stripe:'#8b5820' }),
+  siamese:           makeCatSVG({ body:'#f0e8d8', belly:'#fff8f0', eye:'#4a90d9', ear:'#c8a898', nose:'#d06060', stripe:'none' }),
+  persian:           makeCatSVG({ body:'#f8f0e8', belly:'#ffffff', eye:'#e87030', ear:'#f0d8c8', stripe:'none' }),
+  russianblue:       makeCatSVG({ body:'#8898b0', belly:'#b8c8d8', eye:'#2d9a4a', ear:'#6878a0', stripe:'none' }),
+  scottishfold:      makeCatSVG({ body:'#d8c8b0', belly:'#f5f0e8', eye:'#c8a020', ear:'#c0a888', stripe:'#b09070' }),
+  birman:            makeCatSVG({ body:'#f0e8d0', belly:'#ffffff', eye:'#4a90d9', ear:'#e0c8b0', stripe:'none' }),
+  angora:            makeCatSVG({ body:'#f8f8f8', belly:'#ffffff', eye:'#4a90d9', ear:'#f0e8e8', stripe:'none' }),
+  americanshorthair: makeCatSVG({ body:'#c0b090', belly:'#e8e0d0', eye:'#c8a020', ear:'#a89870', stripe:'#807050' }),
+  norwegianforest:   makeCatSVG({ body:'#a07840', belly:'#e8d8b0', eye:'#2d7a3a', ear:'#886030', stripe:'#604820' }),
+  himalayan:         makeCatSVG({ body:'#f0e8e0', belly:'#ffffff', eye:'#4a90d9', ear:'#e0c8c0', nose:'#d06060', stripe:'none' }),
+  orange:            makeCatSVG({ body:'#f09040', belly:'#fde8c0', eye:'#c8a020', ear:'#e07828', stripe:'#c06010' })
+};
+
+// 封面滚动猫咪（小尺寸）
+const catSVGsSmall = Object.fromEntries(
+  Object.entries(catSVGs).map(([k]) => [k, makeCatSVG(
+    { ragdoll:{body:'#d4c5e2',belly:'#f0eaf8',eye:'#4a90d9',ear:'#c4a8d8'}, devonrex:{body:'#c8b89a',belly:'#f0e8d8',eye:'#8b6914',ear:'#b89878',stripe:'#a07850'}, mainecoon:{body:'#b8956a',belly:'#f5e8d0',eye:'#2d7a3a',ear:'#a07850',stripe:'#8b6040'}, bengal:{body:'#d4a855',belly:'#f8e8b0',eye:'#c8a020',ear:'#c09040',stripe:'#8b5a10'}, britishshorthair:{body:'#9aabb8',belly:'#dde8f0',eye:'#e8a020',ear:'#8090a0'}, abyssinian:{body:'#c8904a',belly:'#f0d8a8',eye:'#c8a020',ear:'#b07838',stripe:'#8b5820'}, siamese:{body:'#f0e8d8',belly:'#fff8f0',eye:'#4a90d9',ear:'#c8a898',nose:'#d06060'}, persian:{body:'#f8f0e8',belly:'#ffffff',eye:'#e87030',ear:'#f0d8c8'}, russianblue:{body:'#8898b0',belly:'#b8c8d8',eye:'#2d9a4a',ear:'#6878a0'}, scottishfold:{body:'#d8c8b0',belly:'#f5f0e8',eye:'#c8a020',ear:'#c0a888',stripe:'#b09070'}, birman:{body:'#f0e8d0',belly:'#ffffff',eye:'#4a90d9',ear:'#e0c8b0'}, angora:{body:'#f8f8f8',belly:'#ffffff',eye:'#4a90d9',ear:'#f0e8e8'}, americanshorthair:{body:'#c0b090',belly:'#e8e0d0',eye:'#c8a020',ear:'#a89870',stripe:'#807050'}, norwegianforest:{body:'#a07840',belly:'#e8d8b0',eye:'#2d7a3a',ear:'#886030',stripe:'#604820'}, himalayan:{body:'#f0e8e0',belly:'#ffffff',eye:'#4a90d9',ear:'#e0c8c0',nose:'#d06060'}, orange:{body:'#f09040',belly:'#fde8c0',eye:'#c8a020',ear:'#e07828',stripe:'#c06010'} }[k] || {}, 40
+  )])
+);
+
+// ──────────────────────────────────────────────
+// 封面滚动条初始化
+// ──────────────────────────────────────────────
+const catKeys = Object.keys(catSVGs);
+function buildTrack(trackId, keys) {
+  const track = document.getElementById(trackId);
+  // 渲染两遍实现无缝循环
+  [keys, keys].forEach(arr => {
+    arr.forEach(k => {
+      const div = document.createElement('div');
+      div.className = 'home-cat-item';
+      div.innerHTML = makeCatSVG(
+        { ragdoll:{body:'#d4c5e2',belly:'#f0eaf8',eye:'#4a90d9',ear:'#c4a8d8'}, devonrex:{body:'#c8b89a',belly:'#f0e8d8',eye:'#8b6914',ear:'#b89878',stripe:'#a07850'}, mainecoon:{body:'#b8956a',belly:'#f5e8d0',eye:'#2d7a3a',ear:'#a07850',stripe:'#8b6040'}, bengal:{body:'#d4a855',belly:'#f8e8b0',eye:'#c8a020',ear:'#c09040',stripe:'#8b5a10'}, britishshorthair:{body:'#9aabb8',belly:'#dde8f0',eye:'#e8a020',ear:'#8090a0'}, abyssinian:{body:'#c8904a',belly:'#f0d8a8',eye:'#c8a020',ear:'#b07838',stripe:'#8b5820'}, siamese:{body:'#f0e8d8',belly:'#fff8f0',eye:'#4a90d9',ear:'#c8a898',nose:'#d06060'}, persian:{body:'#f8f0e8',belly:'#ffffff',eye:'#e87030',ear:'#f0d8c8'}, russianblue:{body:'#8898b0',belly:'#b8c8d8',eye:'#2d9a4a',ear:'#6878a0'}, scottishfold:{body:'#d8c8b0',belly:'#f5f0e8',eye:'#c8a020',ear:'#c0a888',stripe:'#b09070'}, birman:{body:'#f0e8d0',belly:'#ffffff',eye:'#4a90d9',ear:'#e0c8b0'}, angora:{body:'#f8f8f8',belly:'#ffffff',eye:'#4a90d9',ear:'#f0e8e8'}, americanshorthair:{body:'#c0b090',belly:'#e8e0d0',eye:'#c8a020',ear:'#a89870',stripe:'#807050'}, norwegianforest:{body:'#a07840',belly:'#e8d8b0',eye:'#2d7a3a',ear:'#886030',stripe:'#604820'}, himalayan:{body:'#f0e8e0',belly:'#ffffff',eye:'#4a90d9',ear:'#e0c8c0',nose:'#d06060'}, orange:{body:'#f09040',belly:'#fde8c0',eye:'#c8a020',ear:'#e07828',stripe:'#c06010'} }[k] || {}, 40
+      );
+      track.appendChild(div);
+    });
+  });
+}
+buildTrack('track1', catKeys.slice(0, 8));
+buildTrack('track2', catKeys.slice(8));
+
+// ──────────────────────────────────────────────
+// 答题页小猫图标（随机切换）
+// ──────────────────────────────────────────────
+let lastQuizCatIdx = -1;
+function getRandomCatIcon() {
+  let idx;
+  do { idx = Math.floor(Math.random() * catKeys.length); } while (idx === lastQuizCatIdx && catKeys.length > 1);
+  lastQuizCatIdx = idx;
+  return makeCatSVG(
+    { ragdoll:{body:'#d4c5e2',belly:'#f0eaf8',eye:'#4a90d9',ear:'#c4a8d8'}, devonrex:{body:'#c8b89a',belly:'#f0e8d8',eye:'#8b6914',ear:'#b89878',stripe:'#a07850'}, mainecoon:{body:'#b8956a',belly:'#f5e8d0',eye:'#2d7a3a',ear:'#a07850',stripe:'#8b6040'}, bengal:{body:'#d4a855',belly:'#f8e8b0',eye:'#c8a020',ear:'#c09040',stripe:'#8b5a10'}, britishshorthair:{body:'#9aabb8',belly:'#dde8f0',eye:'#e8a020',ear:'#8090a0'}, abyssinian:{body:'#c8904a',belly:'#f0d8a8',eye:'#c8a020',ear:'#b07838',stripe:'#8b5820'}, siamese:{body:'#f0e8d8',belly:'#fff8f0',eye:'#4a90d9',ear:'#c8a898',nose:'#d06060'}, persian:{body:'#f8f0e8',belly:'#ffffff',eye:'#e87030',ear:'#f0d8c8'}, russianblue:{body:'#8898b0',belly:'#b8c8d8',eye:'#2d9a4a',ear:'#6878a0'}, scottishfold:{body:'#d8c8b0',belly:'#f5f0e8',eye:'#c8a020',ear:'#c0a888',stripe:'#b09070'}, birman:{body:'#f0e8d0',belly:'#ffffff',eye:'#4a90d9',ear:'#e0c8b0'}, angora:{body:'#f8f8f8',belly:'#ffffff',eye:'#4a90d9',ear:'#f0e8e8'}, americanshorthair:{body:'#c0b090',belly:'#e8e0d0',eye:'#c8a020',ear:'#a89870',stripe:'#807050'}, norwegianforest:{body:'#a07840',belly:'#e8d8b0',eye:'#2d7a3a',ear:'#886030',stripe:'#604820'}, himalayan:{body:'#f0e8e0',belly:'#ffffff',eye:'#4a90d9',ear:'#e0c8c0',nose:'#d06060'}, orange:{body:'#f09040',belly:'#fde8c0',eye:'#c8a020',ear:'#e07828',stripe:'#c06010'} }[catKeys[idx]] || {}, 40
+  );
+}
+
+// ──────────────────────────────────────────────
+// 状态
+// ──────────────────────────────────────────────
+let currentQ = 0;
+let answers = [];
+let selectedOpt = null;
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function startQuiz() {
+  currentQ = 0;
+  answers = [];
+  renderQuestion();
+  showPage('page-quiz');
+}
+
+function renderQuestion() {
+  const q = questions[currentQ];
+  selectedOpt = null;
+  document.getElementById('quiz-counter').textContent = `${currentQ + 1} / ${questions.length}`;
+  document.getElementById('progress-fill').style.width = `${(currentQ / questions.length) * 100}%`;
+  document.getElementById('question-text').textContent = q.text;
+  document.getElementById('quiz-cat-bubble').textContent = q.hint;
+  document.getElementById('quiz-cat-icon').innerHTML = getRandomCatIcon();
+
+  const wrap = document.getElementById('options-wrap');
+  wrap.innerHTML = '';
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.innerHTML = `<span class="opt-key">${opt.key}</span><span>${opt.text}</span>`;
+    btn.onclick = () => selectOption(i, btn);
+    wrap.appendChild(btn);
+  });
+
+  const nextBtn = document.getElementById('btn-next');
+  nextBtn.classList.remove('enabled');
+  nextBtn.textContent = currentQ === questions.length - 1 ? '查看结果 →' : '继续 →';
+}
+
+function selectOption(idx, el) {
+  document.querySelectorAll('.opt').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedOpt = idx;
+  document.getElementById('btn-next').classList.add('enabled');
+}
+
+function nextQuestion() {
+  if (selectedOpt === null) return;
+  answers.push(questions[currentQ].options[selectedOpt].dim);
+  if (currentQ < questions.length - 1) {
+    currentQ++;
+    renderQuestion();
+  } else {
+    showResult();
+  }
+}
+
+function goBack() {
+  if (currentQ === 0) {
+    showPage('page-home');
+  } else {
+    currentQ--;
+    answers.pop();
+    renderQuestion();
+  }
+}
+
+// ──────────────────────────────────────────────
+// 结果计算（4维度 → 16种结果）
+// ──────────────────────────────────────────────
+function calcResult() {
+  const count = { E:0, I:0, S:0, N:0, T:0, F:0, J:0, P:0 };
+  answers.forEach(d => { if (count[d] !== undefined) count[d]++; });
+  const e = count.E >= count.I ? "E" : "I";
+  const s = count.S >= count.N ? "S" : "N";
+  const t = count.T >= count.F ? "T" : "F";
+  const j = count.J >= count.P ? "J" : "P";
+  const type = e + s + t + j;
+  const typeMap = {
+    "ENTJ": "天生就是要被仰望的布偶",
+    "ENTP": "把所有人都带跑偏的德文卷毛",
+    "ENFJ": "比你更担心你的缅因猫",
+    "ENFP": "什么都想扑一下的豹猫",
+    "ESTJ": "规矩就是规矩的英短",
+    "ESTP": "永远在找下一个目标的阿比",
+    "ESFJ": "全家都要照顾到的暹罗",
+    "ESFP": "出镜率最高的波斯猫",
+    "INTJ": "冷眼看穿一切的俄蓝",
+    "INTP": "坐在那里想了三小时的折耳",
+    "INFJ": "只有你看不见的温柔的伯曼",
+    "INFP": "活在自己故事里的安哥拉",
+    "ISTJ": "几点吃饭绝不能乱的美短",
+    "ISTP": "不需要你担心的挪威森林猫",
+    "ISFJ": "记住你所有习惯的喜马拉雅",
+    "ISFP": "今天也没什么大事的橘猫"
+  };
+  return typeMap[type] || "今天也没什么大事的橘猫";
+}
+
+function formatCatName(name) {
+  const breeds = ['布偶','德文卷毛','缅因猫','豹猫','英短','阿比','暹罗','波斯猫','俄蓝','折耳','伯曼','安哥拉','美短','挪威森林猫','喜马拉雅','橘猫'];
+  for (const breed of breeds) {
+    if (name.endsWith(breed)) {
+      const prefix = name.slice(0, name.length - breed.length);
+      return prefix + '<br>' + breed;
+    }
+  }
+  return name;
+}
+
+function showResult() {
+  const typeName = calcResult();
+  const data = results[typeName];
+  document.getElementById('result-type').innerHTML = formatCatName(typeName);
+  document.getElementById('result-subname').textContent = data.subname;
+  document.getElementById('result-quote-text').textContent = data.quote;
+  document.getElementById('result-desc').textContent = data.desc;
+  const now = new Date();
+  document.getElementById('result-date').textContent = `${now.getMonth()+1}月${now.getDate()}日`;
+  const traitList = document.getElementById('trait-list');
+  traitList.innerHTML = '';
+  data.traits.forEach(t => {
+    const span = document.createElement('span');
+    span.className = 'trait';
+    span.textContent = t;
+    traitList.appendChild(span);
+  });
+  document.getElementById('result-cat-frame').innerHTML = catSVGs[data.cat] || catSVGs.orange;
+  showPage('page-result');
+}
+
+function shareResult() {
+  const type = document.getElementById('result-type').textContent;
+  if (navigator.share) {
+    navigator.share({ title: 'CatTI 测试结果', text: `我在 CatTI 测出来是「${type}」，你是什么猫？`, url: window.location.href });
+  } else {
+    alert(`我是「${type}」！\n你也来测测？`);
+  }
+}
+
+function retryQuiz() { startQuiz(); }
+</script>
+</body>
+</html>
