@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>BirdTI</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --black: #111111;
+    --gray-1: #f5f5f5;
+    --gray-2: #e8e8e8;
+    --gray-3: #aaaaaa;
+    --white: #ffffff;
+    --accent: #f59e0b;
+    --accent-light: #fef3c7;
+    --font: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
+  }
+
+  body {
+    background: var(--white);
+    color: var(--black);
+    font-family: var(--font);
+    min-height: 100vh;
+    max-width: 390px;
+    margin: 0 auto;
+    overflow-x: hidden;
+  }
+
+  .page { display: none !important; }
+  .page.active { display: revert !important; }
+
+  /* ─── 封面页 ─── */
+  #page-home {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+    background: #fffbeb;
+  }
+
+  .home-subtitle {
+    font-size: 13px;
+    color: var(--gray-3);
+    margin-bottom: 40px;
+    letter-spacing: 0.05em;
+  }
+
+  .home-birds-scroll {
+    width: 100vw;
+    max-width: 390px;
+    overflow: hidden;
+    margin-bottom: 40px;
+  }
+
+  .home-birds-track {
+    display: flex;
+    gap: 12px;
+    padding: 8px 0;
+    animation: scroll-left 18s linear infinite;
+    width: max-content;
+  }
+
+  .home-birds-track2 {
+    animation: scroll-right 22s linear infinite;
+    margin-top: 8px;
+  }
+
+  @keyframes scroll-left {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  @keyframes scroll-right {
+    0% { transform: translateX(-50%); }
+    100% { transform: translateX(0); }
+  }
+
+  .home-bird-item {
+    width: 56px;
+    height: 56px;
+    background: var(--white);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+
+  .btn-start {
+    background: var(--black);
+    color: var(--white);
+    border: none;
+    border-radius: 14px;
+    padding: 16px 48px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+  }
+
+  .btn-start:active { opacity: 0.8; }
+
+  /* ─── 答题页 ─── */
+  #page-quiz {
+    min-height: 100vh;
+    padding-bottom: 40px;
+    background: var(--white);
+  }
+
+  .quiz-header {
+    padding: 20px 20px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .btn-back {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--black);
+    padding: 4px;
+    line-height: 1;
+  }
+
+  .quiz-counter {
+    font-size: 13px;
+    color: var(--gray-3);
+    font-weight: 500;
+  }
+
+  .progress-bar {
+    height: 3px;
+    background: var(--gray-2);
+    margin: 14px 20px 0;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+
+  .quiz-bird-wrap {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    padding: 20px 20px 0;
+  }
+
+  .quiz-bird-icon {
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .quiz-bird-bubble {
+    background: var(--gray-1);
+    border-radius: 12px 12px 12px 4px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--gray-3);
+    line-height: 1.5;
+    max-width: 240px;
+  }
+
+  .question-text {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.5;
+    padding: 20px 20px 0;
+    letter-spacing: -0.01em;
+  }
+
+  .options-wrap {
+    padding: 16px 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .opt {
+    background: var(--gray-1);
+    border: 2px solid transparent;
+    border-radius: 14px;
+    padding: 14px 16px;
+    text-align: left;
+    font-size: 15px;
+    line-height: 1.5;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    transition: border-color 0.15s, background 0.15s;
+    font-family: var(--font);
+    color: var(--black);
+  }
+
+  .opt:active { opacity: 0.8; }
+
+  .opt.selected {
+    border-color: var(--accent);
+    background: var(--accent-light);
+  }
+
+  .opt-key {
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--gray-3);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .opt.selected .opt-key { color: #d97706; }
+
+  .quiz-footer {
+    padding: 20px 20px 0;
+  }
+
+  .btn-next {
+    width: 100%;
+    background: var(--gray-2);
+    color: var(--gray-3);
+    border: none;
+    border-radius: 14px;
+    padding: 16px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    font-family: var(--font);
+  }
+
+  .btn-next.enabled {
+    background: var(--black);
+    color: var(--white);
+  }
+
+  .btn-next:active { opacity: 0.8; }
+
+  /* ─── 结果页 ─── */
+  #page-result {
+    min-height: 100vh;
+    padding-bottom: 60px;
+    background: var(--white);
+  }
+
+  .result-header {
+    padding: 14px 20px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .result-header-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--black);
+  }
+
+  .result-date {
+    font-size: 13px;
+    color: var(--gray-3);
+  }
+
+  .result-hero {
+    padding: 40px 28px 34px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #fffbeb;
+    margin: 14px 20px 0;
+    border-radius: 20px;
+  }
+
+  .result-bird-frame {
+    width: 144px;
+    height: 144px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .result-label {
+    font-size: 12px;
+    color: var(--gray-3);
+    margin-bottom: 6px;
+    letter-spacing: 0.05em;
+  }
+
+  .result-type {
+    font-size: 32px;
+    font-weight: 800;
+    text-align: center;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  .result-subname {
+    font-size: 14px;
+    color: var(--gray-3);
+    margin-top: 6px;
+  }
+
+  .result-quote {
+    background: var(--gray-1);
+    border-radius: 14px;
+    padding: 16px 18px 16px 14px;
+    margin: 16px 20px 0;
+    position: relative;
+  }
+
+  .result-quote::before {
+    content: '"';
+    font-size: 36px;
+    color: var(--accent);
+    line-height: 1;
+    display: block;
+    margin-bottom: 4px;
+    font-family: Georgia, serif;
+  }
+
+  .result-quote p {
+    padding-left: 6px;
+    font-size: 15px;
+    line-height: 1.6;
+    font-weight: 500;
+  }
+
+  .result-traits {
+    padding: 16px 20px 0;
+  }
+
+  .result-traits-label {
+    font-size: 12px;
+    color: var(--gray-3);
+    margin-bottom: 10px;
+    letter-spacing: 0.05em;
+  }
+
+  .trait-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .trait {
+    background: var(--accent-light);
+    color: #92400e;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .result-desc {
+    padding: 0 24px 24px;
+    font-size: 14px;
+    line-height: 1.8;
+    color: #444;
+    margin-top: 16px;
+  }
+
+  .result-actions {
+    padding: 0 24px;
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn-share {
+    flex: 1;
+    background: var(--black);
+    color: var(--white);
+    border: none;
+    border-radius: 14px;
+    padding: 15px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: var(--font);
+  }
+
+  .btn-retry {
+    flex: 1;
+    background: var(--gray-1);
+    color: var(--black);
+    border: none;
+    border-radius: 14px;
+    padding: 15px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: var(--font);
+  }
+
+  .btn-share:active, .btn-retry:active { opacity: 0.8; }
+</style>
+</head>
+<body>
+
+<!-- 封面页 -->
+<div class="page active" id="page-home">
+  <svg width="220" height="52" viewBox="0 0 220 52" style="margin-bottom:8px">
+    <text x="0" y="44" font-family="-apple-system,PingFang SC,sans-serif" font-size="48" font-weight="900" fill="#111" letter-spacing="-2">BirdTI</text>
+  </svg>
+  <p class="home-subtitle">你是哪种鸟？</p>
+
+  <div class="home-birds-scroll">
+    <div class="home-birds-track" id="track1"></div>
+    <div class="home-birds-track home-birds-track2" id="track2"></div>
+  </div>
+
+  <button class="btn-start" onclick="startQuiz()">开始测试</button>
+</div>
+
+<!-- 答题页 -->
+<div class="page" id="page-quiz">
+  <div class="quiz-header">
+    <button class="btn-back" onclick="goBack()">←</button>
+    <span class="quiz-counter" id="quiz-counter">1 / 12</span>
+  </div>
+  <div class="progress-bar">
+    <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+  </div>
+  <div class="quiz-bird-wrap">
+    <div class="quiz-bird-icon" id="quiz-bird-icon"></div>
+    <div class="quiz-bird-bubble" id="quiz-bird-bubble">认真想想，别骗我</div>
+  </div>
+  <div class="question-text" id="question-text"></div>
+  <div class="options-wrap" id="options-wrap"></div>
+  <div class="quiz-footer">
+    <button class="btn-next" id="btn-next" onclick="nextQuestion()">继续 →</button>
+  </div>
+</div>
+
+<!-- 结果页 -->
+<div class="page" id="page-result">
+  <div class="result-header">
+    <span class="result-header-title">BirdTI 结果</span>
+    <span class="result-date" id="result-date"></span>
+  </div>
+  <div class="result-hero">
+    <div class="result-bird-frame" id="result-bird-frame"></div>
+    <div class="result-label">你的鸟格是</div>
+    <div class="result-type" id="result-type">—</div>
+    <div class="result-subname" id="result-subname"></div>
+  </div>
+  <div class="result-quote">
+    <p id="result-quote-text"></p>
+  </div>
+  <div class="result-traits">
+    <div class="result-traits-label">性格标签</div>
+    <div class="trait-list" id="trait-list"></div>
+  </div>
+  <div class="result-desc" id="result-desc"></div>
+  <div class="result-actions">
+    <button class="btn-share" onclick="shareResult()">分享给朋友</button>
+    <button class="btn-retry" onclick="retryQuiz()">再测一次</button>
+  </div>
+</div>
+
+<script>
+// ──────────────────────────────────────────────
+// 题目数据（12题，鸟的视角，覆盖E/I S/N T/F J/P）
+// ──────────────────────────────────────────────
+const questions = [
+  {
+    text: "树枝上来了一只从没见过的鸟，你怎么做？",
+    hint: "社交还是不社交",
+    options: [
+      { key: "A", text: "立刻飞过去，先叫两声打个招呼，说不定能交个朋友", dim: "E" },
+      { key: "B", text: "在旁边的枝上观察，确认对方没有威胁再说", dim: "I" },
+      { key: "C", text: "瞥了一眼，继续梳羽毛，关我什么事", dim: "I" }
+    ]
+  },
+  {
+    text: "你发现了一片从没去过的新树林，你会？",
+    hint: "要不要飞进去",
+    options: [
+      { key: "A", text: "立刻飞进去，不知道里面有什么才更想探索", dim: "N" },
+      { key: "B", text: "记下位置，等明天准备好了再来", dim: "J" },
+      { key: "C", text: "飞了两下，觉得原来那棵树也挺好的，回去了", dim: "S" }
+    ]
+  },
+  {
+    text: "你的食物被另一只鸟抢走了，你怎么办？",
+    hint: "这时候你第一个动作是什么",
+    options: [
+      { key: "A", text: "立刻追过去，大声叫，这是我的", dim: "T" },
+      { key: "B", text: "在旁边委屈地看着，等它吃完再找别的", dim: "F" },
+      { key: "C", text: "评估了一下体型差距，决定去找另一块食物", dim: "S" }
+    ]
+  },
+  {
+    text: "夜里你停在枝头，你在想什么？",
+    hint: "你的夜晚比你诚实多了",
+    options: [
+      { key: "A", text: "什么都没想，风吹过来，很舒服，就这样", dim: "P" },
+      { key: "B", text: "想着明天要去找的那个朋友，暖暖的", dim: "F" },
+      { key: "C", text: "在脑子里规划明天的飞行路线，想了很久", dim: "N" }
+    ]
+  },
+  {
+    text: "人类靠近你，想给你喂食",
+    hint: "你的第一反应是",
+    options: [
+      { key: "A", text: "直接飞到他手上，吃！", dim: "E" },
+      { key: "B", text: "在旁边观察了一会儿，确认安全再靠近", dim: "S" },
+      { key: "C", text: "飞远了，你跟我不熟", dim: "I" }
+    ]
+  },
+  {
+    text: "你正在打盹，突然旁边有动静惊醒了你",
+    hint: "你的第一个动作是",
+    options: [
+      { key: "A", text: "立刻飞起来冲过去看，不搞清楚睡不着", dim: "P" },
+      { key: "B", text: "睁眼确认了一下没有危险，继续睡", dim: "J" },
+      { key: "C", text: "睁眼盯着那个方向，在脑子里推演了一遍可能是什么", dim: "N" }
+    ]
+  },
+  {
+    text: "你今天不想唱歌，但同伴一直在叫你一起",
+    hint: "你会怎么处理",
+    options: [
+      { key: "A", text: "陪着唱了，虽然累，但看大家开心也还好", dim: "F" },
+      { key: "B", text: "飞到另一棵树上，找个安静的地方待着", dim: "I" },
+      { key: "C", text: "唱了一会儿，然后悄悄飞走了，意思到了就行", dim: "T" }
+    ]
+  },
+  {
+    text: "你独自待在树上，你在做什么？",
+    hint: "一个人的时候你是什么状态",
+    options: [
+      { key: "A", text: "在周围飞来飞去，看看这个闻闻那个", dim: "E" },
+      { key: "B", text: "找了个阳光最好的枝头，发呆", dim: "I" },
+      { key: "C", text: "在脑子里想着一件最近一直没想通的事", dim: "N" }
+    ]
+  },
+  {
+    text: "鸟群要迁徙了，有人提议走一条新路线，你？",
+    hint: "跟还是不跟",
+    options: [
+      { key: "A", text: "好啊！走！现在就飞！", dim: "P" },
+      { key: "B", text: "先问问新路线安不安全，大概多远", dim: "J" },
+      { key: "C", text: "无所谓，跟着大家走就是", dim: "S" }
+    ]
+  },
+  {
+    text: "你找到了一个特别好的筑巢位置，你的反应是？",
+    hint: "你会说出来吗",
+    options: [
+      { key: "A", text: "立刻叫来所有朋友，让大家都知道", dim: "E" },
+      { key: "B", text: "自己心里高兴了一下，悄悄记下来", dim: "I" },
+      { key: "C", text: "已经开始规划怎么把巢建得更好了", dim: "T" }
+    ]
+  },
+  {
+    text: "今天的觅食地点换了，你的反应是？",
+    hint: "这种时刻最能暴露你",
+    options: [
+      { key: "A", text: "随便，飞过去就是，饿了什么都行", dim: "P" },
+      { key: "B", text: "认真观察了一下新地点，确认没问题再去", dim: "J" },
+      { key: "C", text: "越想越多，最后在原地盘旋了好几圈", dim: "N" }
+    ]
+  },
+  {
+    text: "最后一题：如果可以选，你最想过哪种鸟生？",
+    hint: "认真想想，这是你真实的向往",
+    options: [
+      { key: "A", text: "每天认识新朋友，飞遍所有地方，把整个天空都踩一遍", dim: "E" },
+      { key: "B", text: "有一棵最懂我的树，安安静静待在一起就够了", dim: "I" },
+      { key: "C", text: "自由自在，想飞哪就飞哪，没有笼子没有规矩", dim: "P" }
+    ]
+  }
+];
+
+// ──────────────────────────────────────────────
+// 结果数据（16种鸟类 × MBTI）
+// ──────────────────────────────────────────────
+const results = {
+  // ENTJ - 鹰
+  "天空只有我说了算的鹰": {
+    subname: "不用担心，我来掌舵",
+    quote: "不是我控制欲强，是你们飞得太慢。",
+    traits: ["俯瞰全局是本能", "目标锁定就不会放弃", "让人又敬畏又有压力", "天生的领头鸟"],
+    desc: "鹰在天空中盘旋，所有鸟都会下意识避让——不是因为它凶，是因为它太有确定感了。它专注、自律，认定的猎物绝不拖泥带水。你也是那种还没开口，气场已经先到的类型。脑子转速比别人快三档，说话的时候已经想好五步之后了。",
+    bird: "eagle"
+  },
+  // ENTP - 喜鹊
+  "把所有人都带跑偏的喜鹊": {
+    subname: "智商在线但没有刹车",
+    quote: "我只是在帮你们看到你们没看到的可能性。",
+    traits: ["点子多到自己都跟不上", "叫声里全是新想法", "话题跳跃是日常", "最怕无聊"],
+    desc: "喜鹊是鸟界最爱说话的，它的叫声里永远藏着新的想法——对一切新鲜事物都无法抗拒，看到什么有意思的就飞过去，根本管不住自己。它停不下来，闲着比累着更难受。你也是那种脑子一旦停下来就会开始搞事情的人。",
+    bird: "magpie"
+  },
+  // ENFJ - 天鹅
+  "比你更担心你的天鹅": {
+    subname: "全场情绪承包商",
+    quote: "你们先说，我没事的，真的。",
+    traits: ["最先感知到气氛不对", "委屈自己照顾所有人", "掉眼泪前先问别人没事吧", "群里最快回消息"],
+    desc: "天鹅的姿态是世界上最优雅的，但它对同伴情绪的感知力强得像装了雷达，而且它真的在乎，不是客套。你也是那种还没问就已经感知到对方情绪的人。你照顾了很多人，但没人知道你也会偶尔希望有人先问问你。",
+    bird: "swan"
+  },
+  // ENFP - 鹦鹉
+  "什么都想学一遍的鹦鹉": {
+    subname: "人间好奇心漩涡",
+    quote: "等等！这个也好玩！那个先别关！",
+    traits: ["同时开了好几个新方向", "热情真实但寿命只有两周", "认识新朋友比记住名字快", "最怕无聊"],
+    desc: "鹦鹉对一切声音都无法抗拒，听到什么有意思的就学，根本管不住自己。它不是乱，它只是对世界的兴趣太多了。你也是那种什么都能让你兴奋、但兴奋完了发现不知道接下来要干嘛的人。你的生命是一部群像喜剧。",
+    bird: "parrot"
+  },
+  // ESTJ - 啄木鸟
+  "规矩就是规矩的啄木鸟": {
+    subname: "靠谱是我最高荣誉",
+    quote: "几点啄树就是几点，这不是很基本的事吗？",
+    traits: ["作息精准到分钟", "迟到的人会被记住", "说「没问题」前先确认细节", "天然的可信赖体质"],
+    desc: "啄木鸟是鸟界的「实干派」，不是因为它无聊，是因为它认真——认真到别的鸟都跟不上那股劲儿。它把每一棵树都当成正经任务来对待，不接受差不多。你也是那种把「靠谱」当成最高荣誉的人。别人不守承诺你会皱眉，但只要你说行，就是真的行。",
+    bird: "woodpecker"
+  },
+  // ESTP - 翠鸟
+  "说好钓鱼结果飞走了的翠鸟": {
+    subname: "人形随机事件发生器",
+    quote: "计划？什么计划？我有计划吗？",
+    traits: ["说好的事不保证明天还记得", "永远在整活", "掉线是日常", "但搞起来真的很爽"],
+    desc: "翠鸟的人生哲学是「规律是别人的事」——它能在两秒内无缝切换「我在等鱼」和「我要飞走」两种状态，令所有人完全无法预测。但你不得不承认，跟它在一起总会发生有意思的事。你也是那种身边人永远无法预测下一步的类型。",
+    bird: "kingfisher"
+  },
+  // ESFJ - 麻雀
+  "全村都要照顾到的麻雀": {
+    subname: "有求必应的宇宙中心",
+    quote: "我帮，我帮，都帮，真的不麻烦。",
+    traits: ["说不出口「我不想理你」", "帮完了才发现自己很累", "被需要会开心", "最了解每个人的喜好"],
+    desc: "麻雀是最贴近人类生活的鸟，它需要参与周围所有人的日常——你去哪它跟哪，你难过它也难过。它天生把别人的需求放在前面。你也是那种不好意思让别人失望的人，说「好」总是比说「不」容易。",
+    bird: "sparrow"
+  },
+  // ESFP - 孔雀
+  "出镜率最高的孔雀": {
+    subname: "天生要被看见",
+    quote: "人生苦短，今天的羽毛不能将就。",
+    traits: ["镜头感天生", "气氛不对立刻出手救场", "朋友圈比日记还真实", "让无聊的场合有救"],
+    desc: "孔雀的羽毛是需要每天展示的，它们也通常知道自己好看——出场前要整理羽毛，走在路上自带回头率。它不是浮夸，它只是对「出场感」天生敏感。你也是那种走进房间之前已经预设好自己出场方式的人。",
+    bird: "peacock"
+  },
+  // INTJ - 猫头鹰
+  "冷眼看穿一切的猫头鹰": {
+    subname: "我不孤僻，我在筛选",
+    quote: "不是不在乎，只是不值得让你看到我在乎。",
+    traits: ["进门槛高但进了就很稳", "表情淡定但内心戏很多", "宁可自己搞定也不解释", "睡前复盘所有细节"],
+    desc: "猫头鹰是「高冷系」的代表，对人有门槛，但认定你之后是真的认定了，不会随便动摇。它的眼神永远像在说「关我什么事」，但其实什么都默默注意到了。你也是那种外表淡定、内部服务器飞速运转的人。",
+    bird: "owl"
+  },
+  // INTP - 乌鸦
+  "想到一半就忘了的乌鸦": {
+    subname: "大型行走发呆装置",
+    quote: "刚才有个很好的想法，现在消失了。",
+    traits: ["外表神秘内心温吞", "脑内频道永远开着", "懒得解释但其实早想通了", "发呆时可能是天才"],
+    desc: "乌鸦是鸟界智商最高的，但它看起来一直在想什么严肃的事，其实脑子里可能在播一首歌。它不慌不忙，慢慢来，但慢下来之后往往比谁都想得深。你也是那种坐着看起来什么都没做、实际上已经在脑子里把一件事转了十八个角度的人。",
+    bird: "crow"
+  },
+  // INFJ - 夜莺
+  "永远在唱但只有你听懂的夜莺": {
+    subname: "微笑刺客",
+    quote: "我很好。（我不好。但我处理好了。）",
+    traits: ["治愈别人是本能", "自己偷偷崩掉再重启", "说「没事」基本都有事", "共情雷达24小时开机"],
+    desc: "夜莺的歌声是世界上最治愈的声音之一，但这个鸟其实很容易焦虑——它把情绪藏得很好，但压力一大就会莫名悲伤。你也是那个对外永远温柔、对内偶尔有个小角落在悄悄坍塌的人。你治愈了很多人，但治愈你的人，你还没遇到够多。",
+    bird: "nightingale"
+  },
+  // INFP - 白鸽
+  "活在自己故事里的白鸽": {
+    subname: "精神世界建筑师",
+    quote: "这片云的形状让我想到了一些事，你们不会懂的。",
+    traits: ["内心宇宙比现实还大", "对美有偏执的标准", "表达困难但感受满分", "被真正理解那一刻会全力爱你"],
+    desc: "白鸽外表纯洁安静，但它的内心完全是另一个世界——它对情绪极度敏感，对它在乎的人极度忠诚，但它不会随便对谁打开。你也是那种别人看起来在发呆、自己已经在脑内写完一部剧本的人。没人懂你很孤独，但被懂了的那一刻，什么都值了。",
+    bird: "dove"
+  },
+  // ISTJ - 企鹅
+  "几点吃鱼绝不能乱的企鹅": {
+    subname: "执行力无限",
+    quote: "说好今天游三圈的，凌晨两点也要游完。",
+    traits: ["作息清单从不过夜", "迟喂食让自己睡不着", "靠谱到让人有点压力", "「差不多」三个字是异类"],
+    desc: "企鹅是鸟界的「实干派」——它认定要完成的事，绝对不会半途而废。它把每一次觅食、每一次孵蛋都当成正经任务来对待。你也是那种一旦认定要做就必须做完的人，不是完美主义，是「说出去了就不能反悔」的朴素信念在撑着你。",
+    bird: "penguin"
+  },
+  // ISTP - 隼
+  "不需要你担心的隼": {
+    subname: "沉默系解题高手",
+    quote: "没什么好说的，我已经搞定了。",
+    traits: ["话少但每次俯冲都有用", "速度快到诡异", "不解释但结果在那里", "被需要但不爱被打扰"],
+    desc: "隼是最「不黏人」的鸟，它独立、冷静、对外人保持距离，但它认定的目标它会一直默默守着。它不会说「我来帮你」，但出了事第一个冷静处理的就是它。你也是那种存在本身就是安全感的人，不需要解释，结果在那里就够了。",
+    bird: "falcon"
+  },
+  // ISFJ - 燕子
+  "记住你所有习惯的燕子": {
+    subname: "世界上最细心的鸟",
+    quote: "你没说，但我记得你上次喜欢那个方向的风。",
+    traits: ["你的作息比你自己更清楚", "不邀功但默默都做了", "被忽视会难过但不说", "照顾你是本能"],
+    desc: "燕子每年都会回到同一个地方筑巢，骨子里是一部超级细致的人际关系记录仪——它记得你上次在哪里、喜欢哪种天气，把照顾你当成一种本能。你也是那种把「照顾别人」当作日常操作系统的人。你做的很多事别人没注意到，但那不影响你继续做。",
+    bird: "swallow"
+  },
+  // ISFP - 知更鸟
+  "今天也没什么大事的知更鸟": {
+    subname: "慢节奏生活家",
+    quote: "急什么，好东西都要慢慢来的。",
+    traits: ["催不动是天赋", "享受当下是人生观", "对生活有自己的审美", "不内卷但也不委屈"],
+    desc: "知更鸟用它小小的身体以自己的节奏探索世界，没有人能催它——它就是要慢慢飞，慢慢唱，把每一刻都踩实了再说。它不是懒，它只是不觉得「快」是什么了不起的优点。你也是那种不跟风、不焦虑未来、认真把今天过好的人。别人在赶路，你在听风声。",
+    bird: "robin"
+  }
+};
+
+// ──────────────────────────────────────────────
+// 16种鸟类像素SVG（内联，程序生成）
+// ──────────────────────────────────────────────
+function makeBirdSVG(cfg, size) {
+  const s = size || 130;
+  const c = Object.assign({
+    body: '#f5c842', wing: '#e8a820', belly: '#fff8e0',
+    beak: '#f97316', eye: '#111', tail: '#d4a010',
+    crest: 'none', bg: 'transparent', legColor: '#f97316'
+  }, cfg);
+  const hasCrest = c.crest !== 'none';
+  return `<svg width="${s}" height="${s}" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated">
+    <rect width="32" height="32" fill="${c.bg}" rx="6"/>
+    ${hasCrest ? `<path d="M16 4 Q14 1 12 3 Q14 5 16 6 Q18 5 20 3 Q18 1 16 4Z" fill="${c.crest}"/>` : ''}
+    <!-- 尾巴 -->
+    <path d="M6 20 Q2 22 3 26 Q5 24 8 22Z" fill="${c.tail}"/>
+    <!-- 翅膀 -->
+    <ellipse cx="14" cy="19" rx="7" ry="4" fill="${c.wing}" transform="rotate(-10,14,19)"/>
+    <!-- 身体 -->
+    <ellipse cx="16" cy="20" rx="8" ry="6" fill="${c.body}"/>
+    <!-- 肚皮 -->
+    <ellipse cx="17" cy="21" rx="4" ry="3.5" fill="${c.belly}"/>
+    <!-- 头 -->
+    <ellipse cx="20" cy="13" rx="6" ry="5.5" fill="${c.body}"/>
+    <!-- 眼睛 -->
+    <circle cx="22" cy="12" r="1.5" fill="white"/>
+    <circle cx="22.3" cy="12" r="0.9" fill="${c.eye}"/>
+    <circle cx="22.6" cy="11.6" r="0.3" fill="white"/>
+    <!-- 嘴巴 -->
+    <path d="M26 13 L29 12 L26 14Z" fill="${c.beak}"/>
+    <!-- 腿 -->
+    <line x1="16" y1="26" x2="15" y2="29" stroke="${c.legColor}" stroke-width="1"/>
+    <line x1="15" y1="29" x2="13" y2="30" stroke="${c.legColor}" stroke-width="0.8"/>
+    <line x1="15" y1="29" x2="16" y2="30" stroke="${c.legColor}" stroke-width="0.8"/>
+    <line x1="19" y1="26" x2="18" y2="29" stroke="${c.legColor}" stroke-width="1"/>
+    <line x1="18" y1="29" x2="16" y2="30" stroke="${c.legColor}" stroke-width="0.8"/>
+    <line x1="18" y1="29" x2="19" y2="30" stroke="${c.legColor}" stroke-width="0.8"/>
+  </svg>`;
+}
+
+const birdColorMap = {
+  eagle:       { body:'#8b6914', wing:'#6b4f10', belly:'#d4b870', beak:'#f97316', tail:'#5a3e0a', eye:'#111' },
+  magpie:      { body:'#111111', wing:'#222222', belly:'#f5f5f5', beak:'#555', tail:'#111', eye:'#fff' },
+  swan:        { body:'#f8f8f8', wing:'#e8e8e8', belly:'#ffffff', beak:'#f97316', tail:'#ddd', eye:'#111' },
+  parrot:      { body:'#22c55e', wing:'#16a34a', belly:'#bbf7d0', beak:'#f97316', tail:'#15803d', crest:'#facc15', eye:'#111' },
+  woodpecker:  { body:'#dc2626', wing:'#991b1b', belly:'#fef2f2', beak:'#111', tail:'#7f1d1d', eye:'#111' },
+  kingfisher:  { body:'#0ea5e9', wing:'#0284c7', belly:'#fde68a', beak:'#111', tail:'#0369a1', eye:'#111' },
+  sparrow:     { body:'#a16207', wing:'#854d0e', belly:'#fef9c3', beak:'#555', tail:'#713f12', eye:'#111' },
+  peacock:     { body:'#0d9488', wing:'#0f766e', belly:'#ccfbf1', beak:'#555', tail:'#134e4a', crest:'#a3e635', eye:'#111' },
+  owl:         { body:'#78716c', wing:'#57534e', belly:'#fef3c7', beak:'#f97316', tail:'#44403c', eye:'#f59e0b' },
+  crow:        { body:'#1c1917', wing:'#111', belly:'#292524', beak:'#111', tail:'#0c0a09', eye:'#6366f1' },
+  nightingale: { body:'#92400e', wing:'#78350f', belly:'#fef3c7', beak:'#555', tail:'#451a03', eye:'#111' },
+  dove:        { body:'#e7e5e4', wing:'#d6d3d1', belly:'#fafaf9', beak:'#f97316', tail:'#c7c3c0', eye:'#111' },
+  penguin:     { body:'#111', wing:'#222', belly:'#f5f5f5', beak:'#f97316', tail:'#111', legColor:'#f97316', eye:'#111' },
+  falcon:      { body:'#6b7280', wing:'#4b5563', belly:'#f3f4f6', beak:'#f97316', tail:'#374151', eye:'#111' },
+  swallow:     { body:'#1d4ed8', wing:'#1e40af', belly:'#fef3c7', beak:'#111', tail:'#1e3a8a', eye:'#111' },
+  robin:       { body:'#92400e', wing:'#78350f', belly:'#fca5a5', beak:'#f97316', tail:'#451a03', eye:'#111' }
+};
+
+const birdSVGs = Object.fromEntries(
+  Object.entries(birdColorMap).map(([k, v]) => [k, makeBirdSVG(v, 130)])
+);
+
+const birdKeys = Object.keys(birdColorMap);
+
+// ──────────────────────────────────────────────
+// 封面滚动条初始化
+// ──────────────────────────────────────────────
+function buildTrack(trackId, keys) {
+  const track = document.getElementById(trackId);
+  [keys, keys].forEach(arr => {
+    arr.forEach(k => {
+      const div = document.createElement('div');
+      div.className = 'home-bird-item';
+      div.innerHTML = makeBirdSVG(birdColorMap[k] || {}, 40);
+      track.appendChild(div);
+    });
+  });
+}
+buildTrack('track1', birdKeys.slice(0, 8));
+buildTrack('track2', birdKeys.slice(8));
+
+// ──────────────────────────────────────────────
+// 答题页小鸟图标（随机切换）
+// ──────────────────────────────────────────────
+let lastQuizBirdIdx = -1;
+function getRandomBirdIcon() {
+  let idx;
+  do { idx = Math.floor(Math.random() * birdKeys.length); } while (idx === lastQuizBirdIdx && birdKeys.length > 1);
+  lastQuizBirdIdx = idx;
+  return makeBirdSVG(birdColorMap[birdKeys[idx]] || {}, 40);
+}
+
+// ──────────────────────────────────────────────
+// 状态
+// ──────────────────────────────────────────────
+let currentQ = 0;
+let answers = [];
+let selectedOpt = null;
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function startQuiz() {
+  currentQ = 0;
+  answers = [];
+  renderQuestion();
+  showPage('page-quiz');
+}
+
+function renderQuestion() {
+  const q = questions[currentQ];
+  selectedOpt = null;
+  document.getElementById('quiz-counter').textContent = `${currentQ + 1} / ${questions.length}`;
+  document.getElementById('progress-fill').style.width = `${(currentQ / questions.length) * 100}%`;
+  document.getElementById('question-text').textContent = q.text;
+  document.getElementById('quiz-bird-bubble').textContent = q.hint;
+  document.getElementById('quiz-bird-icon').innerHTML = getRandomBirdIcon();
+
+  const wrap = document.getElementById('options-wrap');
+  wrap.innerHTML = '';
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.innerHTML = `<span class="opt-key">${opt.key}</span><span>${opt.text}</span>`;
+    btn.onclick = () => selectOption(i, btn);
+    wrap.appendChild(btn);
+  });
+
+  const nextBtn = document.getElementById('btn-next');
+  nextBtn.classList.remove('enabled');
+  nextBtn.textContent = currentQ === questions.length - 1 ? '查看结果 →' : '继续 →';
+}
+
+function selectOption(idx, el) {
+  document.querySelectorAll('.opt').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedOpt = idx;
+  document.getElementById('btn-next').classList.add('enabled');
+}
+
+function nextQuestion() {
+  if (selectedOpt === null) return;
+  answers.push(questions[currentQ].options[selectedOpt].dim);
+  if (currentQ < questions.length - 1) {
+    currentQ++;
+    renderQuestion();
+  } else {
+    showResult();
+  }
+}
+
+function goBack() {
+  if (currentQ === 0) {
+    showPage('page-home');
+  } else {
+    currentQ--;
+    answers.pop();
+    renderQuestion();
+  }
+}
+
+// ──────────────────────────────────────────────
+// 结果计算（4维度 → 16种结果）
+// ──────────────────────────────────────────────
+function calcResult() {
+  const count = { E:0, I:0, S:0, N:0, T:0, F:0, J:0, P:0 };
+  answers.forEach(d => { if (count[d] !== undefined) count[d]++; });
+  const e = count.E >= count.I ? "E" : "I";
+  const s = count.S >= count.N ? "S" : "N";
+  const t = count.T >= count.F ? "T" : "F";
+  const j = count.J >= count.P ? "J" : "P";
+  const type = e + s + t + j;
+  const typeMap = {
+    "ENTJ": "天空只有我说了算的鹰",
+    "ENTP": "把所有人都带跑偏的喜鹊",
+    "ENFJ": "比你更担心你的天鹅",
+    "ENFP": "什么都想学一遍的鹦鹉",
+    "ESTJ": "规矩就是规矩的啄木鸟",
+    "ESTP": "说好钓鱼结果飞走了的翠鸟",
+    "ESFJ": "全村都要照顾到的麻雀",
+    "ESFP": "出镜率最高的孔雀",
+    "INTJ": "冷眼看穿一切的猫头鹰",
+    "INTP": "想到一半就忘了的乌鸦",
+    "INFJ": "永远在唱但只有你听懂的夜莺",
+    "INFP": "活在自己故事里的白鸽",
+    "ISTJ": "几点吃鱼绝不能乱的企鹅",
+    "ISTP": "不需要你担心的隼",
+    "ISFJ": "记住你所有习惯的燕子",
+    "ISFP": "今天也没什么大事的知更鸟"
+  };
+  return typeMap[type] || "今天也没什么大事的知更鸟";
+}
+
+function formatBirdName(name) {
+  const birds = ['鹰','喜鹊','天鹅','鹦鹉','啄木鸟','翠鸟','麻雀','孔雀','猫头鹰','乌鸦','夜莺','白鸽','企鹅','隼','燕子','知更鸟'];
+  for (const bird of birds) {
+    if (name.endsWith(bird)) {
+      const prefix = name.slice(0, name.length - bird.length);
+      return prefix + '<br>' + bird;
+    }
+  }
+  return name;
+}
+
+function showResult() {
+  const typeName = calcResult();
+  const data = results[typeName];
+  document.getElementById('result-type').innerHTML = formatBirdName(typeName);
+  document.getElementById('result-subname').textContent = data.subname;
+  document.getElementById('result-quote-text').textContent = data.quote;
+  document.getElementById('result-desc').textContent = data.desc;
+  const now = new Date();
+  document.getElementById('result-date').textContent = `${now.getMonth()+1}月${now.getDate()}日`;
+  const traitList = document.getElementById('trait-list');
+  traitList.innerHTML = '';
+  data.traits.forEach(t => {
+    const span = document.createElement('span');
+    span.className = 'trait';
+    span.textContent = t;
+    traitList.appendChild(span);
+  });
+  document.getElementById('result-bird-frame').innerHTML = birdSVGs[data.bird] || birdSVGs.robin;
+  showPage('page-result');
+}
+
+function shareResult() {
+  const type = document.getElementById('result-type').textContent;
+  if (navigator.share) {
+    navigator.share({ title: 'BirdTI 测试结果', text: `我在 BirdTI 测出来是「${type}」，你是什么鸟？`, url: window.location.href });
+  } else {
+    alert(`我是「${type}」！\n你也来测测？`);
+  }
+}
+
+function retryQuiz() { startQuiz(); }
+</script>
+</body>
+</html>
